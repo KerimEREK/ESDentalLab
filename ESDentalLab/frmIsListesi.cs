@@ -7,7 +7,8 @@ namespace ESDentalLab
         Yok,
         BugunTeslim,
         Geciken,
-        Uretimde
+        Uretimde,
+        TeslimEdilen
     }
 
     public partial class frmIsListesi : Form
@@ -27,6 +28,7 @@ namespace ESDentalLab
                 IsListesiOzetFiltresi.BugunTeslim => "Bugün teslim edilecek işleri görüntülüyorsunuz",
                 IsListesiOzetFiltresi.Geciken => "Geciken işleri görüntülüyorsunuz",
                 IsListesiOzetFiltresi.Uretimde => "Üretimdeki işleri görüntülüyorsunuz",
+                IsListesiOzetFiltresi.TeslimEdilen => "Teslim edilen işleri görüntülüyorsunuz",
                 _ => "Kayıtları filtreleyin, takip edin ve güncelleyin"
             };
             ArayuzTema.Uygula(this, "İş Listesi", altBaslik);
@@ -333,6 +335,9 @@ namespace ESDentalLab
                     break;
                 case IsListesiOzetFiltresi.Uretimde:
                     cmbDurumFiltresi.SelectedItem = "Üretimde";
+                    break;
+                case IsListesiOzetFiltresi.TeslimEdilen:
+                    cmbDurumFiltresi.SelectedItem = "Teslim edildi";
                     break;
             }
         }

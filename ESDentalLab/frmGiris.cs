@@ -32,7 +32,7 @@ namespace ESDentalLab
             {
                 Dock = DockStyle.Top,
                 Height = 110,
-                BackColor = Color.FromArgb(22, 54, 78)
+                BackColor = ArayuzTema.Baslik
             };
 
             Label lblMarka = new Label
@@ -96,7 +96,7 @@ namespace ESDentalLab
                 Location = new Point(40, 315),
                 Cursor = Cursors.Hand,
                 FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(30, 121, 159),
+                BackColor = ArayuzTema.Vurgu,
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 10F, FontStyle.Bold)
             };

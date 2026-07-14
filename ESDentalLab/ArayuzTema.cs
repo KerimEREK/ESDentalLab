@@ -1,3 +1,4 @@
+using System.Drawing.Drawing2D;
 using System.Reflection;
 
 namespace ESDentalLab
@@ -6,6 +7,118 @@ namespace ESDentalLab
     {
         public const int BaslikYuksekligi = 82;
         private static Image? _logoOnbellek;
+
+        /// <summary>Klinik grafit + teal palet (mockup).</summary>
+        public static readonly Color Sidebar = Color.FromArgb(30, 42, 45);
+        public static readonly Color Baslik = Color.FromArgb(30, 42, 45);
+        public static readonly Color Vurgu = Color.FromArgb(0, 138, 138);
+        public static readonly Color VurguKoyu = Color.FromArgb(0, 118, 118);
+        public static readonly Color NavHover = Color.FromArgb(45, 60, 64);
+        public static readonly Color IcerikZemin = Color.FromArgb(244, 247, 246);
+        public static readonly Color NavMetin = Color.FromArgb(220, 232, 230);
+        public static readonly Color SolukMetin = Color.FromArgb(154, 176, 172);
+        public static readonly Color AltBaslikMetin = Color.FromArgb(176, 204, 198);
+        public static readonly Color Ayirici = Color.FromArgb(58, 74, 78);
+        public static readonly Color Tehlike = Color.FromArgb(200, 80, 70);
+        public static readonly Color Metin = Color.FromArgb(40, 52, 56);
+        public static readonly Color Kenar = Color.FromArgb(210, 220, 218);
+        public static readonly Color AltSatir = Color.FromArgb(248, 250, 249);
+        public static readonly Color Soft = Color.FromArgb(230, 240, 237);
+        public static readonly Color Basari = Color.FromArgb(46, 140, 90);
+        public static readonly Color RozetZemin = Color.FromArgb(230, 244, 242);
+        public static readonly Color RozetBasariZemin = Color.FromArgb(232, 245, 236);
+        public static readonly Color RozetGriZemin = Color.FromArgb(232, 236, 238);
+
+        public static GraphicsPath YuvarlakYol(Rectangle r, int yaricap)
+        {
+            int d = yaricap * 2;
+            GraphicsPath yol = new GraphicsPath();
+            yol.AddArc(r.X, r.Y, d, d, 180, 90);
+            yol.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+            yol.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+            yol.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+            yol.CloseFigure();
+            return yol;
+        }
+
+        public static void YuvarlakKartUygula(Panel panel, int yaricap = 12)
+        {
+            panel.BorderStyle = BorderStyle.None;
+            panel.BackColor = Color.White;
+            panel.Padding = new Padding(4);
+
+            void Yenile()
+            {
+                if (panel.Width <= 1 || panel.Height <= 1)
+                {
+                    return;
+                }
+
+                using GraphicsPath yol = YuvarlakYol(new Rectangle(0, 0, panel.Width - 1, panel.Height - 1), yaricap);
+                panel.Region = new Region(yol);
+            }
+
+            panel.Resize += (_, _) => Yenile();
+            Yenile();
+
+            panel.Paint -= YuvarlakKart_Paint;
+            panel.Paint += YuvarlakKart_Paint;
+            panel.Tag = yaricap;
+        }
+
+        private static void YuvarlakKart_Paint(object? sender, PaintEventArgs e)
+        {
+            if (sender is not Panel panel)
+            {
+                return;
+            }
+
+            int yaricap = panel.Tag is int y ? y : 12;
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            Rectangle r = new Rectangle(0, 0, panel.Width - 1, panel.Height - 1);
+            using GraphicsPath yol = YuvarlakYol(r, yaricap);
+            using Pen kenar = new Pen(Kenar);
+            e.Graphics.DrawPath(kenar, yol);
+        }
+
+        public static void DurumRozetiCiz(Graphics g, Rectangle bounds, string durum, Font font)
+        {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            string metin = durum switch
+            {
+                "Teslime hazır" => "Hazır",
+                "Teslim edildi" => "Teslim",
+                _ => durum
+            };
+
+            (Color zemin, Color yazi) = metin switch
+            {
+                "Üretimde" => (RozetZemin, VurguKoyu),
+                "Hazır" => (RozetBasariZemin, Basari),
+                "Teslim" => (RozetGriZemin, Color.FromArgb(100, 116, 120)),
+                _ => (Soft, Metin)
+            };
+
+            Size yaziBoyut = TextRenderer.MeasureText(metin, font);
+            int w = Math.Min(bounds.Width - 8, yaziBoyut.Width + 18);
+            int h = Math.Min(bounds.Height - 8, 24);
+            Rectangle rozet = new Rectangle(
+                bounds.X + 8,
+                bounds.Y + (bounds.Height - h) / 2,
+                w,
+                h);
+
+            using GraphicsPath yol = YuvarlakYol(rozet, 10);
+            using SolidBrush firca = new SolidBrush(zemin);
+            g.FillPath(firca, yol);
+            TextRenderer.DrawText(
+                g,
+                metin,
+                font,
+                rozet,
+                yazi,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+        }
 
         public static Image? LogoResmi()
         {
@@ -87,7 +200,7 @@ namespace ESDentalLab
             Control[] mevcutKontroller = form.Controls.Cast<Control>().ToArray();
 
             form.SuspendLayout();
-            form.BackColor = Color.FromArgb(243, 247, 249);
+            form.BackColor = IcerikZemin;
             form.Controls.Clear();
 
             if (form.TopLevel)
@@ -108,7 +221,7 @@ namespace ESDentalLab
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
                 RowCount = 2,
-                BackColor = Color.FromArgb(243, 247, 249),
+                BackColor = IcerikZemin,
                 Tag = new[] { baslik, altBaslik }
             };
             kok.RowStyles.Add(new RowStyle(SizeType.Absolute, BaslikYuksekligi));
@@ -118,7 +231,7 @@ namespace ESDentalLab
             Panel ustPanel = new Panel
             {
                 Name = "pnlTemaBaslik",
-                BackColor = Color.FromArgb(22, 54, 78),
+                BackColor = Baslik,
                 Dock = DockStyle.Fill,
                 Margin = Padding.Empty
             };
@@ -138,7 +251,7 @@ namespace ESDentalLab
                 Name = "lblTemaAltBaslik",
                 AutoSize = true,
                 Font = new Font("Segoe UI", 9F),
-                ForeColor = Color.FromArgb(202, 221, 235),
+                ForeColor = AltBaslikMetin,
                 Location = new Point(26, 48),
                 Text = altBaslik
             };
@@ -152,7 +265,7 @@ namespace ESDentalLab
                 Name = "pnlTemaIcerik",
                 Dock = DockStyle.Fill,
                 AutoScroll = true,
-                BackColor = Color.FromArgb(243, 247, 249),
+                BackColor = IcerikZemin,
                 Padding = new Padding(12, 8, 12, 8),
                 Margin = Padding.Empty
             };
@@ -234,7 +347,7 @@ namespace ESDentalLab
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
                 RowCount = 3,
-                BackColor = Color.FromArgb(243, 247, 249)
+                BackColor = IcerikZemin
             };
             duzen.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
 
@@ -324,15 +437,15 @@ namespace ESDentalLab
 
             if (birincil)
             {
-                buton.BackColor = Color.FromArgb(30, 121, 159);
+                buton.BackColor = Vurgu;
                 buton.ForeColor = Color.White;
                 buton.FlatAppearance.BorderSize = 0;
             }
             else
             {
                 buton.BackColor = Color.White;
-                buton.ForeColor = Color.FromArgb(22, 54, 78);
-                buton.FlatAppearance.BorderColor = Color.FromArgb(214, 224, 232);
+                buton.ForeColor = Baslik;
+                buton.FlatAppearance.BorderColor = Kenar;
             }
         }
 
@@ -577,12 +690,12 @@ namespace ESDentalLab
             Button ekle,
             Button sil)
         {
-            Color kenar = Color.FromArgb(205, 216, 224);
-            Color baslik = Color.FromArgb(22, 54, 78);
-            Color vurgu = Color.FromArgb(30, 121, 159);
-            Color metin = Color.FromArgb(35, 52, 64);
-            Color altSatir = Color.FromArgb(246, 249, 251);
-            Color soft = Color.FromArgb(235, 241, 245);
+            Color kenar = Kenar;
+            Color baslik = Baslik;
+            Color vurgu = Vurgu;
+            Color metin = Metin;
+            Color altSatir = AltSatir;
+            Color soft = Soft;
 
             panel.BackColor = Color.White;
             panel.Padding = Padding.Empty;
@@ -604,7 +717,7 @@ namespace ESDentalLab
 
             ara.BorderStyle = BorderStyle.FixedSingle;
             ara.Font = new Font("Segoe UI", 9.5F);
-            ara.BackColor = Color.FromArgb(248, 251, 253);
+            ara.BackColor = AltSatir;
             ara.ForeColor = metin;
 
             listeCerceve.BackColor = kenar;
@@ -636,7 +749,7 @@ namespace ESDentalLab
                 else
                 {
                     btn.BackColor = soft;
-                    btn.ForeColor = Color.FromArgb(51, 70, 84);
+                    btn.ForeColor = Metin;
                     btn.FlatAppearance.BorderColor = kenar;
                     btn.FlatAppearance.BorderSize = 1;
                 }
@@ -653,7 +766,7 @@ namespace ESDentalLab
                 return;
             }
 
-            Color kenar = panel.Tag is Color c ? c : Color.FromArgb(205, 216, 224);
+            Color kenar = panel.Tag is Color c ? c : Kenar;
             using Pen kalem = new Pen(kenar);
             Rectangle r = panel.ClientRectangle;
             r.Width -= 1;
@@ -668,9 +781,9 @@ namespace ESDentalLab
                 return;
             }
 
-            Color vurgu = Color.FromArgb(30, 121, 159);
-            Color metin = Color.FromArgb(35, 52, 64);
-            Color altSatir = Color.FromArgb(246, 249, 251);
+            Color vurgu = Vurgu;
+            Color metin = Metin;
+            Color altSatir = AltSatir;
             if (liste.Tag is object[] renkler && renkler.Length >= 3)
             {
                 vurgu = (Color)renkler[0];
@@ -698,7 +811,7 @@ namespace ESDentalLab
 
             if (secili)
             {
-                using Pen vurguKalem = new Pen(Color.FromArgb(18, 90, 120), 3);
+                using Pen vurguKalem = new Pen(VurguKoyu, 3);
                 e.Graphics.DrawLine(
                     vurguKalem,
                     e.Bounds.Left,
@@ -726,15 +839,15 @@ namespace ESDentalLab
                     buton.Margin = Padding.Empty;
                     if (buton.Text is "+" )
                     {
-                        buton.BackColor = Color.FromArgb(30, 121, 159);
+                        buton.BackColor = Vurgu;
                         buton.ForeColor = Color.White;
                         buton.FlatAppearance.BorderSize = 0;
                     }
                     else
                     {
-                        buton.BackColor = Color.FromArgb(235, 241, 245);
-                        buton.ForeColor = Color.FromArgb(51, 70, 84);
-                        buton.FlatAppearance.BorderColor = Color.FromArgb(205, 216, 224);
+                        buton.BackColor = Soft;
+                        buton.ForeColor = Metin;
+                        buton.FlatAppearance.BorderColor = Kenar;
                         buton.FlatAppearance.BorderSize = 1;
                     }
                 }
@@ -745,13 +858,13 @@ namespace ESDentalLab
 
                     if (buton.Text is "İptal" or "Çıkış")
                     {
-                        buton.BackColor = Color.FromArgb(235, 241, 245);
-                        buton.ForeColor = Color.FromArgb(51, 70, 84);
-                        buton.FlatAppearance.BorderColor = Color.FromArgb(205, 216, 224);
+                        buton.BackColor = Soft;
+                        buton.ForeColor = Metin;
+                        buton.FlatAppearance.BorderColor = Kenar;
                     }
                     else
                     {
-                        buton.BackColor = Color.FromArgb(30, 121, 159);
+                        buton.BackColor = Vurgu;
                         buton.ForeColor = Color.White;
                         buton.FlatAppearance.BorderSize = 0;
                     }
@@ -762,11 +875,11 @@ namespace ESDentalLab
                 tablo.BackgroundColor = Color.White;
                 tablo.BorderStyle = BorderStyle.None;
                 tablo.EnableHeadersVisualStyles = false;
-                tablo.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(22, 54, 78);
+                tablo.ColumnHeadersDefaultCellStyle.BackColor = Baslik;
                 tablo.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
                 tablo.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
                 tablo.ColumnHeadersHeight = 34;
-                tablo.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(246, 249, 251);
+                tablo.AlternatingRowsDefaultCellStyle.BackColor = AltSatir;
             }
         }
     }

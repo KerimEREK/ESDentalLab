@@ -45,7 +45,7 @@ namespace ESDentalLab
             // 
             // pnlUst
             // 
-            pnlUst.BackColor = Color.FromArgb(22, 54, 78);
+            pnlUst.BackColor = Color.FromArgb(30, 52, 60);
             pnlUst.Controls.Add(lblAltBaslik);
             pnlUst.Controls.Add(lblMarka);
             pnlUst.Dock = DockStyle.Top;
@@ -69,7 +69,7 @@ namespace ESDentalLab
             // 
             lblAltBaslik.AutoSize = true;
             lblAltBaslik.Font = new Font("Segoe UI", 10F);
-            lblAltBaslik.ForeColor = Color.FromArgb(202, 221, 235);
+            lblAltBaslik.ForeColor = Color.FromArgb(176, 204, 198);
             lblAltBaslik.Location = new Point(42, 87);
             lblAltBaslik.Name = "lblAltBaslik";
             lblAltBaslik.Size = new Size(276, 19);
@@ -105,7 +105,7 @@ namespace ESDentalLab
             btnDoktorEkle.FlatAppearance.BorderColor = Color.FromArgb(214, 224, 232);
             btnDoktorEkle.FlatStyle = FlatStyle.Flat;
             btnDoktorEkle.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            btnDoktorEkle.ForeColor = Color.FromArgb(22, 54, 78);
+            btnDoktorEkle.ForeColor = Color.FromArgb(30, 52, 60);
             btnDoktorEkle.Location = new Point(38, 345);
             btnDoktorEkle.Name = "btnDoktorEkle";
             btnDoktorEkle.Size = new Size(250, 82);
@@ -121,7 +121,7 @@ namespace ESDentalLab
             btnDoktorListesi.FlatAppearance.BorderColor = Color.FromArgb(214, 224, 232);
             btnDoktorListesi.FlatStyle = FlatStyle.Flat;
             btnDoktorListesi.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            btnDoktorListesi.ForeColor = Color.FromArgb(22, 54, 78);
+            btnDoktorListesi.ForeColor = Color.FromArgb(30, 52, 60);
             btnDoktorListesi.Location = new Point(325, 345);
             btnDoktorListesi.Name = "btnDoktorListesi";
             btnDoktorListesi.Size = new Size(250, 82);
@@ -132,7 +132,7 @@ namespace ESDentalLab
             // 
             // btnIsEkle
             // 
-            btnIsEkle.BackColor = Color.FromArgb(30, 121, 159);
+            btnIsEkle.BackColor = Color.FromArgb(26, 155, 142);
             btnIsEkle.Cursor = Cursors.Hand;
             btnIsEkle.FlatAppearance.BorderSize = 0;
             btnIsEkle.FlatStyle = FlatStyle.Flat;
@@ -153,7 +153,7 @@ namespace ESDentalLab
             btnIsListesi.FlatAppearance.BorderColor = Color.FromArgb(214, 224, 232);
             btnIsListesi.FlatStyle = FlatStyle.Flat;
             btnIsListesi.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            btnIsListesi.ForeColor = Color.FromArgb(22, 54, 78);
+            btnIsListesi.ForeColor = Color.FromArgb(30, 52, 60);
             btnIsListesi.Location = new Point(38, 447);
             btnIsListesi.Name = "btnIsListesi";
             btnIsListesi.Size = new Size(250, 82);
@@ -169,7 +169,7 @@ namespace ESDentalLab
             btnOdemeEkle.FlatAppearance.BorderColor = Color.FromArgb(214, 224, 232);
             btnOdemeEkle.FlatStyle = FlatStyle.Flat;
             btnOdemeEkle.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            btnOdemeEkle.ForeColor = Color.FromArgb(22, 54, 78);
+            btnOdemeEkle.ForeColor = Color.FromArgb(30, 52, 60);
             btnOdemeEkle.Location = new Point(325, 447);
             btnOdemeEkle.Name = "btnOdemeEkle";
             btnOdemeEkle.Size = new Size(250, 82);
@@ -185,7 +185,7 @@ namespace ESDentalLab
             btnOdemeRaporu.FlatAppearance.BorderColor = Color.FromArgb(214, 224, 232);
             btnOdemeRaporu.FlatStyle = FlatStyle.Flat;
             btnOdemeRaporu.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            btnOdemeRaporu.ForeColor = Color.FromArgb(22, 54, 78);
+            btnOdemeRaporu.ForeColor = Color.FromArgb(30, 52, 60);
             btnOdemeRaporu.Location = new Point(612, 447);
             btnOdemeRaporu.Name = "btnOdemeRaporu";
             btnOdemeRaporu.Size = new Size(250, 82);
@@ -234,7 +234,7 @@ namespace ESDentalLab
             lblBugunTeslimDeger.AutoSize = true;
             lblBugunTeslimDeger.Cursor = Cursors.Hand;
             lblBugunTeslimDeger.Font = new Font("Segoe UI", 17F, FontStyle.Bold);
-            lblBugunTeslimDeger.ForeColor = Color.FromArgb(30, 121, 159);
+            lblBugunTeslimDeger.ForeColor = Color.FromArgb(26, 155, 142);
             lblBugunTeslimDeger.Location = new Point(12, 27);
             lblBugunTeslimDeger.Name = "lblBugunTeslimDeger";
             lblBugunTeslimDeger.Size = new Size(27, 31);
@@ -348,7 +348,7 @@ namespace ESDentalLab
             lblBakiyeDeger.AutoSize = true;
             lblBakiyeDeger.Cursor = Cursors.Hand;
             lblBakiyeDeger.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            lblBakiyeDeger.ForeColor = Color.FromArgb(22, 54, 78);
+            lblBakiyeDeger.ForeColor = Color.FromArgb(30, 52, 60);
             lblBakiyeDeger.Location = new Point(12, 34);
             lblBakiyeDeger.Name = "lblBakiyeDeger";
             lblBakiyeDeger.Size = new Size(47, 21);
@@ -360,7 +360,7 @@ namespace ESDentalLab
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.FromArgb(245, 248, 250);
+            BackColor = Color.FromArgb(238, 242, 241);
             ClientSize = new Size(900, 630);
             Controls.Add(pnlBakiye);
             Controls.Add(pnlUretimde);
