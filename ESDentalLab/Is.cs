@@ -23,5 +23,36 @@ namespace ESDentalLab
             .Sum(odeme => odeme.Tutar);
 
         public decimal KalanTutar => RptMi ? 0 : Math.Max(0, Fiyat - OdendiTutari);
+
+        /// <summary>
+        /// Doktor ödemesi (iş seçimli veya FIFO) sonrası liste durumu.
+        /// </summary>
+        public string OdemeDurumu
+        {
+            get
+            {
+                if (RptMi)
+                {
+                    return "—";
+                }
+
+                if (Fiyat <= 0)
+                {
+                    return "—";
+                }
+
+                if (KalanTutar <= 0)
+                {
+                    return "Ödendi";
+                }
+
+                if (OdendiTutari > 0)
+                {
+                    return "Kısmi";
+                }
+
+                return "Ödenmedi";
+            }
+        }
     }
 }

@@ -13,7 +13,7 @@ namespace ESDentalLab
         {
             _iliskiliIs = iliskiliIs;
             InitializeComponent();
-            ArayuzTema.Uygula(this, "Doktor Ödemesi", "İş seçerseniz yalnız onlara; seçmezseniz açık işlere FIFO dağıtılır");
+            ArayuzTema.Uygula(this, "Doktor Ödemesi", "Fazla tutar doktora alacak yazılır; laboratuvar borçlu olabilir");
             FormDuzeniniAyarla();
             // Tema başlığı + Kaydet/İptal için dialog yüksekliği
             if (TopLevel)
@@ -282,7 +282,12 @@ namespace ESDentalLab
         private void BakiyeyiGoster(decimal bakiye)
         {
             lblBakiye.AutoSize = true;
-            lblBakiye.Text = $"Toplam bakiye: {bakiye:N2} TL";
+            string isaret = bakiye > 0 ? "+" : "";
+            lblBakiye.Text = $"Doktor bakiyesi: {isaret}{bakiye:N2} TL";
+            lblBakiye.ForeColor = bakiye < 0
+                ? Color.FromArgb(30, 121, 159)
+                : Color.FromArgb(180, 40, 40);
+
             if (lblBakiye.Parent is Control parent)
             {
                 lblBakiye.Location = new Point(
@@ -342,12 +347,13 @@ namespace ESDentalLab
                             .Sum(isKaydi => isKaydi.KalanTutar)
                         : 0;
                     lblSecimOzet.Text = acikToplam > 0
-                        ? $"Seçim yok → tutar açık işlere otomatik (FIFO) dağılır · açık: {acikToplam:N2} TL"
-                        : "Seçili iş yok · açık borç bulunamadı";
+                        ? $"Seçim yok → önce açık işlere (FIFO) · açık: {acikToplam:N2} TL · fazlası doktora alacak"
+                        : "Açık borç yok · tutarın tamamı doktora alacak (avans) yazılır";
                 }
                 else
                 {
-                    lblSecimOzet.Text = $"{secilenler.Count} iş seçili · seçim toplamı: {toplamKalan:N2} TL (yalnız bunlara yazılır)";
+                    lblSecimOzet.Text =
+                        $"{secilenler.Count} iş seçili · kalan: {toplamKalan:N2} TL · fazlası doktora alacak yazılır";
                     nudTutar.Value = Math.Min(toplamKalan, nudTutar.Maximum);
                     txtAciklama.Text = secilenler.Count == 1
                         ? $"{secilenler[0].IsNumarasi} - {secilenler[0].HastaAdi} iş ödemesi"

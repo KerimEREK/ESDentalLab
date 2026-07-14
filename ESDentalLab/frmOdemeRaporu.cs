@@ -120,7 +120,7 @@ namespace ESDentalLab
             string satirlar = string.Join("\n",
                 tahsilat.Satirlar.Select(o =>
                     o.IliskiliIs is null
-                        ? $"• (İş bağlı değil) {o.Tutar:N2} TL — {o.Aciklama}"
+                        ? $"• Doktora alacak (avans): {o.Tutar:N2} TL — {o.Aciklama}"
                         : $"• {o.IliskiliIs.IsNumarasi} — {o.IliskiliIs.HastaAdi} / {o.IliskiliIs.IsTuru}: {o.Tutar:N2} TL"));
 
             string iptalBilgi = tahsilat.IptalEdildi

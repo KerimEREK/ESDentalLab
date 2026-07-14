@@ -143,7 +143,7 @@ namespace ESDentalLab
             lblBakiye.Location = new Point(16, 278);
             lblBakiye.Name = "lblBakiye";
             lblBakiye.Size = new Size(100, 15);
-            lblBakiye.Text = "Toplam bakiye: 0,00 TL";
+            lblBakiye.Text = "Doktor bakiyesi: 0,00 TL";
             // 
             // btnKaydet
             // 

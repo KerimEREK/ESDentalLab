@@ -10,7 +10,7 @@ namespace ESDentalLab
             _isKaydi = isKaydi;
             ArayuzTema.Uygula(this, "İş Kaydını Düzenle", "Hasta, doktor, durum ve fiyat bilgilerini güncelleyin");
             // Tema başlığı içerik alanını küçültür; fiyat/RPT/butonlar görünsün
-            ClientSize = new Size(Math.Max(ClientSize.Width, 460), Math.Max(ClientSize.Height, 620));
+            ClientSize = new Size(Math.Max(ClientSize.Width, 730), Math.Max(ClientSize.Height, 550));
         }
 
         private void frmIsDuzenle_Load(object sender, EventArgs e)
@@ -25,8 +25,6 @@ namespace ESDentalLab
 
             cmbDoktor.DataSource = doktorlar;
             cmbDoktor.SelectedItem = _isKaydi.Doktor;
-            cmbIsTuru.DataSource = VeriDeposu.IsTurleri.ToList();
-            cmbIsTuru.Text = _isKaydi.IsTuru;
             txtHastaAdi.Text = _isKaydi.HastaAdi;
             txtDisNumarasi.Text = _isKaydi.DisNumarasi;
             cmbDurum.SelectedItem = _isKaydi.Durum;
@@ -37,8 +35,20 @@ namespace ESDentalLab
             chkRptMi.CheckedChanged += chkRptMi_CheckedChanged;
             RptAlanlariniAyarla();
 
+            ArayuzTema.IsTuruPaneliStilUygula(
+                pnlIsTurleri, pnlIsTuruBaslik, lblIsTuruBaslik,
+                pnlIsTuruListe, txtIsTuruAra, lstIsTurleri, btnIsTuruEkle, btnIsTuruSil);
+
+            // Kayıttaki tür listede yoksa (eski serbest yazım) seçilebilsin diye ekle
+            if (!string.IsNullOrWhiteSpace(_isKaydi.IsTuru) &&
+                !VeriDeposu.IsTurleri.Any(t =>
+                    string.Equals(t, _isKaydi.IsTuru, StringComparison.CurrentCultureIgnoreCase)))
+            {
+                VeriDeposu.IsTuruEkle(_isKaydi.IsTuru);
+            }
+
+            IsTuruListesiniYenile(_isKaydi.IsTuru);
             ArayuzTema.ComboboxAramaEtkinlestir(cmbDoktor);
-            ArayuzTema.ComboboxAramaEtkinlestir(cmbIsTuru, serbestMetinIzin: true);
         }
 
         private void chkRptMi_CheckedChanged(object? sender, EventArgs e)
@@ -59,16 +69,18 @@ namespace ESDentalLab
             }
         }
 
+        private void txtIsTuruAra_TextChanged(object sender, EventArgs e)
+        {
+            string? secili = lstIsTurleri.SelectedItem as string;
+            IsTuruListesiniYenile(secili);
+        }
+
         private void btnIsTuruEkle_Click(object sender, EventArgs e)
         {
-            string tur = cmbIsTuru.Text.Trim();
+            string tur = IsTuruAdiSor();
             if (string.IsNullOrWhiteSpace(tur))
             {
-                tur = IsTuruAdiSor();
-                if (string.IsNullOrWhiteSpace(tur))
-                {
-                    return;
-                }
+                return;
             }
 
             (bool basarili, string mesaj) = VeriDeposu.IsTuruEkle(tur);
@@ -78,14 +90,14 @@ namespace ESDentalLab
                 return;
             }
 
+            txtIsTuruAra.Clear();
             IsTuruListesiniYenile(tur);
             MessageBox.Show(mesaj, "Başarılı", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void btnIsTuruSil_Click(object sender, EventArgs e)
         {
-            string tur = cmbIsTuru.Text.Trim();
-            if (string.IsNullOrWhiteSpace(tur))
+            if (lstIsTurleri.SelectedItem is not string tur)
             {
                 MessageBox.Show("Silmek için listeden bir iş türü seçin.", "Uyarı",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -104,16 +116,54 @@ namespace ESDentalLab
 
             if (basarili)
             {
-                IsTuruListesiniYenile(_isKaydi.IsTuru);
+                IsTuruListesiniYenile(
+                    string.Equals(tur, _isKaydi.IsTuru, StringComparison.CurrentCultureIgnoreCase)
+                        ? null
+                        : _isKaydi.IsTuru);
             }
         }
 
         private void IsTuruListesiniYenile(string? secili)
         {
-            ArayuzTema.ComboboxAramaKaynaginiYenile(
-                cmbIsTuru,
-                VeriDeposu.IsTurleri.Cast<object>(),
-                secili);
+            string filtre = txtIsTuruAra.Text.Trim();
+            IEnumerable<string> kaynak = VeriDeposu.IsTurleri;
+            if (!string.IsNullOrEmpty(filtre))
+            {
+                kaynak = kaynak.Where(t =>
+                    t.Contains(filtre, StringComparison.CurrentCultureIgnoreCase));
+            }
+
+            lstIsTurleri.BeginUpdate();
+            try
+            {
+                lstIsTurleri.Items.Clear();
+                foreach (string tur in kaynak)
+                {
+                    lstIsTurleri.Items.Add(tur);
+                }
+            }
+            finally
+            {
+                lstIsTurleri.EndUpdate();
+            }
+
+            if (string.IsNullOrWhiteSpace(secili))
+            {
+                lstIsTurleri.SelectedIndex = -1;
+                return;
+            }
+
+            for (int i = 0; i < lstIsTurleri.Items.Count; i++)
+            {
+                if (lstIsTurleri.Items[i] is string mevcut &&
+                    string.Equals(mevcut, secili, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    lstIsTurleri.SelectedIndex = i;
+                    return;
+                }
+            }
+
+            lstIsTurleri.SelectedIndex = -1;
         }
 
         private string IsTuruAdiSor()
@@ -160,9 +210,15 @@ namespace ESDentalLab
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(txtHastaAdi.Text) || string.IsNullOrWhiteSpace(cmbIsTuru.Text))
+            if (string.IsNullOrWhiteSpace(txtHastaAdi.Text))
             {
-                MessageBox.Show("Hasta adı ve iş türü zorunludur.", "Eksik bilgi");
+                MessageBox.Show("Hasta adı zorunludur.", "Eksik bilgi");
+                return;
+            }
+
+            if (lstIsTurleri.SelectedItem is not string isTuru)
+            {
+                MessageBox.Show("Lütfen bir iş türü seçin.", "Eksik bilgi");
                 return;
             }
 
@@ -179,9 +235,6 @@ namespace ESDentalLab
                 chkRptMi.Checked = false;
                 return;
             }
-
-            string isTuru = cmbIsTuru.Text.Trim();
-            VeriDeposu.IsTuruEkle(isTuru);
 
             _isKaydi.Doktor = doktor;
             _isKaydi.HastaAdi = txtHastaAdi.Text.Trim();

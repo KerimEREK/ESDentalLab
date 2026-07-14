@@ -320,7 +320,7 @@ namespace ESDentalLab
             string dagitim = string.Join(" · ",
                 satirlar.Select(o =>
                     o.IliskiliIs is null
-                        ? $"{o.Tutar:N2} TL"
+                        ? $"Alacak {o.Tutar:N2} TL"
                         : $"{o.IliskiliIs.HastaAdi} ({o.Tutar:N2} TL)"));
 
             return new TahsilatOzeti
@@ -332,7 +332,12 @@ namespace ESDentalLab
                 OdemeYontemi = ilk.OdemeYontemi,
                 Aciklama = ilk.IptalEdildi
                     ? $"İPTAL: {ilk.IptalNedeni}"
-                    : (satirlar.Count == 1 ? ilk.Aciklama : $"{satirlar.Count} işe dağıtıldı"),
+                    : (satirlar.All(o => o.IliskiliIs is null)
+                        ? ilk.Aciklama
+                        : (satirlar.Count == 1
+                            ? ilk.Aciklama
+                            : $"{satirlar.Count(o => o.IliskiliIs is not null)} işe dağıtıldı" +
+                              (satirlar.Any(o => o.IliskiliIs is null) ? " + alacak" : ""))),
                 KasaAdi = ilk.Kasa?.Ad ?? "",
                 IptalEdildi = ilk.IptalEdildi,
                 IsSayisi = satirlar.Count(o => o.IliskiliIs is not null),
@@ -479,7 +484,8 @@ namespace ESDentalLab
         /// <summary>
         /// Ödemeyi işlere FIFO (en eski kayıt önce) dağıtır.
         /// seciliIsler boş/null ise doktorun tüm açık işlerine; doluysa yalnız seçilenlere yazar.
-        /// Tek kasa girişi + iş başına ödeme satırı oluşturur.
+        /// Açık borçtan fazla kısım işsiz avans / doktora alacak olarak kaydedilir.
+        /// Tek kasa girişi + (iş başına ve gerekirse avans) ödeme satırı oluşturur.
         /// </summary>
         public static (bool Basarili, string Mesaj) OdemeFifoDagit(
             Doctor doktor,
@@ -505,22 +511,13 @@ namespace ESDentalLab
                 .ThenBy(isKaydi => isKaydi.IsNumarasi, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            if (hedefler.Count == 0)
+            if (secimVar && hedefler.Count == 0)
             {
-                return (false, secimVar
-                    ? "Seçili işlerde kalan borç yok."
-                    : "Bu doktora ait açık iş yok. İşsiz avans ödemesi henüz desteklenmiyor.");
-            }
-
-            decimal acikToplam = hedefler.Sum(isKaydi => isKaydi.KalanTutar);
-            if (tutar > acikToplam)
-            {
-                return (false,
-                    $"Tutar açık borç toplamından büyük olamaz.\nAçık borç: {acikToplam:N2} TL");
+                return (false, "Seçili işlerde kalan borç yok.");
             }
 
             string anaAciklama = string.IsNullOrWhiteSpace(aciklama)
-                ? (secimVar ? "İş ödemesi" : "FIFO otomatik dağıtım")
+                ? (secimVar ? "İş ödemesi" : (hedefler.Count > 0 ? "FIFO otomatik dağıtım" : "Avans ödeme"))
                 : aciklama.Trim();
 
             Guid tahsilatNo = Guid.NewGuid();
@@ -556,28 +553,70 @@ namespace ESDentalLab
                 kalanDagitim -= buOdeme;
             }
 
+            // Açık borçtan fazla kalan = doktora alacak (lab borçlu)
+            if (kalanDagitim > 0)
+            {
+                Odeme avans = new Odeme
+                {
+                    TahsilatNo = tahsilatNo,
+                    Doktor = doktor,
+                    IliskiliIs = null,
+                    Kasa = kasa,
+                    Tarih = tarih,
+                    Tutar = kalanDagitim,
+                    OdemeYontemi = odemeYontemi,
+                    Aciklama = hedefler.Count == 0
+                        ? anaAciklama
+                        : $"{anaAciklama} (fazla ödeme / doktora alacak)"
+                };
+                Odemeler.Add(avans);
+                olusanOdemeler.Add(avans);
+            }
+
             if (olusanOdemeler.Count == 0)
             {
                 return (false, "Ödeme dağıtılamadı.");
             }
 
+            int isSatiri = olusanOdemeler.Count(o => o.IliskiliIs is not null);
+            decimal avansTutar = olusanOdemeler
+                .Where(o => o.IliskiliIs is null)
+                .Sum(o => o.Tutar);
+
             KasaGirisiEkle(
                 kasa,
                 tutar,
-                $"{doktor.AdSoyad} - {anaAciklama} ({olusanOdemeler.Count} iş)",
+                $"{doktor.AdSoyad} - {anaAciklama}" +
+                (isSatiri > 0 ? $" ({isSatiri} iş{(avansTutar > 0 ? " + alacak" : "")})" : " (avans)"),
                 tarih,
                 olusanOdemeler[0],
                 tahsilatNo);
 
             string ozetSatirlari = string.Join("\n",
                 olusanOdemeler.Select(o =>
-                    $"• {o.IliskiliIs?.IsNumarasi} {o.IliskiliIs?.HastaAdi}: {o.Tutar:N2} TL"));
+                    o.IliskiliIs is null
+                        ? $"• Doktora alacak (avans): {o.Tutar:N2} TL"
+                        : $"• {o.IliskiliIs.IsNumarasi} {o.IliskiliIs.HastaAdi}: {o.Tutar:N2} TL"));
 
-            string kaynak = secimVar ? "seçili işlere" : "açık işlere (FIFO — en eski önce)";
+            string kaynak = isSatiri == 0
+                ? "avans olarak kaydedildi"
+                : (secimVar
+                    ? "seçili işlere dağıtıldı"
+                    : "açık işlere (FIFO — en eski önce) dağıtıldı");
+
+            string alacakNotu = avansTutar > 0 && isSatiri > 0
+                ? $"\nFazla ödeme {avansTutar:N2} TL doktora alacak yazıldı (bakiye negatif olabilir)."
+                : (avansTutar > 0
+                    ? $"\nDoktor bakiyesi güncellendi: laboratuvar doktora borçlu olabilir."
+                    : "");
+
             DenetimEkle(DenetimKategori.Odeme, "Tahsilat alındı",
-                $"{doktor.AdSoyad} · {tutar:N2} TL · {odemeYontemi} · {kasa.Ad} · {olusanOdemeler.Count} iş");
+                $"{doktor.AdSoyad} · {tutar:N2} TL · {odemeYontemi} · {kasa.Ad}" +
+                (avansTutar > 0 ? $" · alacak {avansTutar:N2} TL" : $" · {isSatiri} iş"));
+
             return (true,
-                $"{tutar:N2} TL {kaynak} dağıtıldı.\n{kasa.Ad} bakiyesi: {kasa.Bakiye:N2} TL\n\n{ozetSatirlari}\n\nYanlış mı? Ödeme Raporu’ndan iptal edebilirsiniz.");
+                $"{tutar:N2} TL {kaynak}.\n{kasa.Ad} bakiyesi: {kasa.Bakiye:N2} TL" +
+                $"{alacakNotu}\n\n{ozetSatirlari}\n\nYanlış mı? Ödeme Raporu’ndan iptal edebilirsiniz.");
         }
 
         public static (bool Basarili, string Mesaj) KasaCikisiEkle(Kasa kasa, decimal tutar, string aciklama, DateTime tarih)

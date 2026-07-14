@@ -58,6 +58,26 @@ namespace ESDentalLab
                     dgvIsler.CommitEdit(DataGridViewDataErrorContexts.Commit);
                 }
             };
+
+            dgvIsler.CellFormatting += dgvIsler_CellFormatting;
+        }
+
+        private void dgvIsler_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.RowIndex < 0 || dgvIsler.Columns[e.ColumnIndex].Name != "colOdemeDurumu")
+            {
+                return;
+            }
+
+            string durum = e.Value?.ToString() ?? "";
+            e.CellStyle.Font = new Font(dgvIsler.Font, FontStyle.Bold);
+            e.CellStyle.ForeColor = durum switch
+            {
+                "Ödendi" => Color.FromArgb(22, 120, 70),
+                "Kısmi" => Color.FromArgb(180, 110, 20),
+                "Ödenmedi" => Color.FromArgb(180, 40, 40),
+                _ => Color.FromArgb(91, 107, 119)
+            };
         }
 
         private void frmIsListesi_Load(object sender, EventArgs e)

@@ -564,6 +564,150 @@ namespace ESDentalLab
                 cmb.GetItemText(item).Contains(yazilan, StringComparison.CurrentCultureIgnoreCase));
         }
 
+        /// <summary>
+        /// İş ekle/düzenle sağ paneli: kart görünümü, satır yüksekliği ve buton renkleri.
+        /// </summary>
+        public static void IsTuruPaneliStilUygula(
+            Panel panel,
+            Panel baslikPanel,
+            Label baslikLabel,
+            Panel listeCerceve,
+            TextBox ara,
+            ListBox liste,
+            Button ekle,
+            Button sil)
+        {
+            Color kenar = Color.FromArgb(205, 216, 224);
+            Color baslik = Color.FromArgb(22, 54, 78);
+            Color vurgu = Color.FromArgb(30, 121, 159);
+            Color metin = Color.FromArgb(35, 52, 64);
+            Color altSatir = Color.FromArgb(246, 249, 251);
+            Color soft = Color.FromArgb(235, 241, 245);
+
+            panel.BackColor = Color.White;
+            panel.Padding = Padding.Empty;
+            panel.Paint -= IsTuruPaneli_Paint;
+            panel.Paint += IsTuruPaneli_Paint;
+            panel.Tag = kenar;
+
+            baslikPanel.BackColor = baslik;
+            baslikPanel.Dock = DockStyle.Top;
+            baslikPanel.Height = 40;
+
+            baslikLabel.AutoSize = false;
+            baslikLabel.Dock = DockStyle.Fill;
+            baslikLabel.TextAlign = ContentAlignment.MiddleLeft;
+            baslikLabel.Padding = new Padding(14, 0, 0, 0);
+            baslikLabel.Font = new Font("Segoe UI Semibold", 10F);
+            baslikLabel.ForeColor = Color.White;
+            baslikLabel.BackColor = Color.Transparent;
+
+            ara.BorderStyle = BorderStyle.FixedSingle;
+            ara.Font = new Font("Segoe UI", 9.5F);
+            ara.BackColor = Color.FromArgb(248, 251, 253);
+            ara.ForeColor = metin;
+
+            listeCerceve.BackColor = kenar;
+            listeCerceve.Padding = new Padding(1);
+            liste.Dock = DockStyle.Fill;
+            liste.BorderStyle = BorderStyle.None;
+            liste.IntegralHeight = false;
+            liste.DrawMode = DrawMode.OwnerDrawFixed;
+            liste.ItemHeight = 32;
+            liste.Font = new Font("Segoe UI", 9.5F);
+            liste.BackColor = Color.White;
+            liste.DrawItem -= IsTuruListesi_DrawItem;
+            liste.DrawItem += IsTuruListesi_DrawItem;
+            liste.Tag = new object[] { vurgu, metin, altSatir };
+
+            void ButonStil(Button btn, bool birincil)
+            {
+                btn.FlatStyle = FlatStyle.Flat;
+                btn.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+                btn.Cursor = Cursors.Hand;
+                btn.Height = 32;
+                btn.MaximumSize = new Size(200, 32);
+                if (birincil)
+                {
+                    btn.BackColor = vurgu;
+                    btn.ForeColor = Color.White;
+                    btn.FlatAppearance.BorderSize = 0;
+                }
+                else
+                {
+                    btn.BackColor = soft;
+                    btn.ForeColor = Color.FromArgb(51, 70, 84);
+                    btn.FlatAppearance.BorderColor = kenar;
+                    btn.FlatAppearance.BorderSize = 1;
+                }
+            }
+
+            ButonStil(ekle, true);
+            ButonStil(sil, false);
+        }
+
+        private static void IsTuruPaneli_Paint(object? sender, PaintEventArgs e)
+        {
+            if (sender is not Panel panel)
+            {
+                return;
+            }
+
+            Color kenar = panel.Tag is Color c ? c : Color.FromArgb(205, 216, 224);
+            using Pen kalem = new Pen(kenar);
+            Rectangle r = panel.ClientRectangle;
+            r.Width -= 1;
+            r.Height -= 1;
+            e.Graphics.DrawRectangle(kalem, r);
+        }
+
+        private static void IsTuruListesi_DrawItem(object? sender, DrawItemEventArgs e)
+        {
+            if (sender is not ListBox liste || e.Index < 0)
+            {
+                return;
+            }
+
+            Color vurgu = Color.FromArgb(30, 121, 159);
+            Color metin = Color.FromArgb(35, 52, 64);
+            Color altSatir = Color.FromArgb(246, 249, 251);
+            if (liste.Tag is object[] renkler && renkler.Length >= 3)
+            {
+                vurgu = (Color)renkler[0];
+                metin = (Color)renkler[1];
+                altSatir = (Color)renkler[2];
+            }
+
+            bool secili = (e.State & DrawItemState.Selected) != 0;
+            Color arka = secili
+                ? vurgu
+                : (e.Index % 2 == 0 ? Color.White : altSatir);
+            Color yazi = secili ? Color.White : metin;
+
+            using SolidBrush firca = new SolidBrush(arka);
+            e.Graphics.FillRectangle(firca, e.Bounds);
+
+            string yaziMetni = liste.GetItemText(liste.Items[e.Index]) ?? "";
+            TextRenderer.DrawText(
+                e.Graphics,
+                yaziMetni,
+                e.Font ?? liste.Font,
+                new Rectangle(e.Bounds.X + 12, e.Bounds.Y, e.Bounds.Width - 16, e.Bounds.Height),
+                yazi,
+                TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.EndEllipsis);
+
+            if (secili)
+            {
+                using Pen vurguKalem = new Pen(Color.FromArgb(18, 90, 120), 3);
+                e.Graphics.DrawLine(
+                    vurguKalem,
+                    e.Bounds.Left,
+                    e.Bounds.Top + 4,
+                    e.Bounds.Left,
+                    e.Bounds.Bottom - 4);
+            }
+        }
+
         private static void StilUygula(Control kontrol)
         {
             if (kontrol is Button buton)

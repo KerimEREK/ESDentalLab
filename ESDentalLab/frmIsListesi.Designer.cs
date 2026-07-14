@@ -23,6 +23,7 @@ namespace ESDentalLab
             colDurum = new DataGridViewTextBoxColumn();
             colAciklama = new DataGridViewTextBoxColumn();
             colFiyat = new DataGridViewTextBoxColumn();
+            colOdemeDurumu = new DataGridViewTextBoxColumn();
             colRptMi = new DataGridViewCheckBoxColumn();
             btnYenile = new Button();
             btnDuzenle = new Button();
@@ -57,7 +58,7 @@ namespace ESDentalLab
             dgvIsler.AutoGenerateColumns = false;
             dgvIsler.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvIsler.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvIsler.Columns.AddRange(new DataGridViewColumn[] { colSec, colHastaAdi, colDoktor, colIsTuru, colDisNumarasi, colKayitTarihi, colTeslimTarihi, colDurum, colAciklama, colFiyat, colRptMi });
+            dgvIsler.Columns.AddRange(new DataGridViewColumn[] { colSec, colHastaAdi, colDoktor, colIsTuru, colDisNumarasi, colKayitTarihi, colTeslimTarihi, colDurum, colAciklama, colFiyat, colOdemeDurumu, colRptMi });
             dgvIsler.Location = new Point(12, 100);
             dgvIsler.MultiSelect = true;
             dgvIsler.Name = "dgvIsler";
@@ -71,7 +72,8 @@ namespace ESDentalLab
             colSec.HeaderText = "Seç";
             colSec.Name = "colSec";
             colSec.Width = 45;
-            colSec.FillWeight = 8F;
+            colSec.FillWeight = 5F;
+            colSec.MinimumWidth = 40;
             colSec.ReadOnly = false;
             colSec.TrueValue = true;
             colSec.FalseValue = false;
@@ -234,6 +236,8 @@ namespace ESDentalLab
             colHastaAdi.HeaderText = "Hasta adı";
             colHastaAdi.Name = "colHastaAdi";
             colHastaAdi.ReadOnly = true;
+            colHastaAdi.FillWeight = 12F;
+            colHastaAdi.MinimumWidth = 90;
             // 
             // colDoktor
             // 
@@ -241,6 +245,8 @@ namespace ESDentalLab
             colDoktor.HeaderText = "Doktor";
             colDoktor.Name = "colDoktor";
             colDoktor.ReadOnly = true;
+            colDoktor.FillWeight = 12F;
+            colDoktor.MinimumWidth = 100;
             // 
             // colIsTuru
             // 
@@ -248,6 +254,8 @@ namespace ESDentalLab
             colIsTuru.HeaderText = "İş türü";
             colIsTuru.Name = "colIsTuru";
             colIsTuru.ReadOnly = true;
+            colIsTuru.FillWeight = 11F;
+            colIsTuru.MinimumWidth = 90;
             // 
             // colDisNumarasi
             // 
@@ -255,6 +263,8 @@ namespace ESDentalLab
             colDisNumarasi.HeaderText = "Diş no";
             colDisNumarasi.Name = "colDisNumarasi";
             colDisNumarasi.ReadOnly = true;
+            colDisNumarasi.FillWeight = 7F;
+            colDisNumarasi.MinimumWidth = 60;
             // 
             // colKayitTarihi
             // 
@@ -263,6 +273,8 @@ namespace ESDentalLab
             colKayitTarihi.HeaderText = "Alınma tarihi";
             colKayitTarihi.Name = "colKayitTarihi";
             colKayitTarihi.ReadOnly = true;
+            colKayitTarihi.FillWeight = 12F;
+            colKayitTarihi.MinimumWidth = 110;
             // 
             // colTeslimTarihi
             // 
@@ -271,6 +283,8 @@ namespace ESDentalLab
             colTeslimTarihi.HeaderText = "Teslim tarihi";
             colTeslimTarihi.Name = "colTeslimTarihi";
             colTeslimTarihi.ReadOnly = true;
+            colTeslimTarihi.FillWeight = 10F;
+            colTeslimTarihi.MinimumWidth = 90;
             // 
             // colDurum
             // 
@@ -278,6 +292,8 @@ namespace ESDentalLab
             colDurum.HeaderText = "Durum";
             colDurum.Name = "colDurum";
             colDurum.ReadOnly = true;
+            colDurum.FillWeight = 10F;
+            colDurum.MinimumWidth = 90;
             // 
             // colAciklama
             // 
@@ -285,6 +301,8 @@ namespace ESDentalLab
             colAciklama.HeaderText = "Açıklama";
             colAciklama.Name = "colAciklama";
             colAciklama.ReadOnly = true;
+            colAciklama.FillWeight = 14F;
+            colAciklama.MinimumWidth = 100;
             // 
             // colFiyat
             // 
@@ -293,6 +311,19 @@ namespace ESDentalLab
             colFiyat.Name = "colFiyat";
             colFiyat.ReadOnly = true;
             colFiyat.DefaultCellStyle.Format = "N2";
+            colFiyat.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            colFiyat.FillWeight = 9F;
+            colFiyat.MinimumWidth = 80;
+            // 
+            // colOdemeDurumu
+            // 
+            colOdemeDurumu.DataPropertyName = "OdemeDurumu";
+            colOdemeDurumu.HeaderText = "Ödeme";
+            colOdemeDurumu.Name = "colOdemeDurumu";
+            colOdemeDurumu.ReadOnly = true;
+            colOdemeDurumu.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            colOdemeDurumu.FillWeight = 8F;
+            colOdemeDurumu.MinimumWidth = 75;
             // 
             // colRptMi
             // 
@@ -300,6 +331,8 @@ namespace ESDentalLab
             colRptMi.HeaderText = "RPT";
             colRptMi.Name = "colRptMi";
             colRptMi.ReadOnly = true;
+            colRptMi.FillWeight = 5F;
+            colRptMi.MinimumWidth = 45;
             // 
             // btnYenile
             // 
@@ -419,6 +452,7 @@ namespace ESDentalLab
         private DataGridViewTextBoxColumn colDurum;
         private DataGridViewTextBoxColumn colAciklama;
         private DataGridViewTextBoxColumn colFiyat;
+        private DataGridViewTextBoxColumn colOdemeDurumu;
         private DataGridViewCheckBoxColumn colRptMi;
         private Button btnYenile;
         private Button btnDuzenle;
