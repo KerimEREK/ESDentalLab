@@ -13,6 +13,8 @@ namespace ESDentalLab
                 dgvIsler,
                 altKontroller: [btnYenile, btnOdemeEkle, lblOzet],
                 altYukseklik: 48);
+
+            btnOdemeEkle.Visible = VeriDeposu.YetkiVarMi(KullaniciYetki.OdemeAl);
         }
 
         private void frmBakiyeIsleri_Load(object sender, EventArgs e)
@@ -45,6 +47,12 @@ namespace ESDentalLab
 
         private void OdemeFormunuAc()
         {
+            if (!VeriDeposu.YetkiVarMi(KullaniciYetki.OdemeAl))
+            {
+                VeriDeposu.YetkiYokUyarisi("Ödeme alma");
+                return;
+            }
+
             if (dgvIsler.CurrentRow?.DataBoundItem is not Is secilenIs)
             {
                 MessageBox.Show("Ödeme eklemek için listeden bir iş seçin.", "İş seçilmedi");

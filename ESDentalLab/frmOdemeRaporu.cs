@@ -29,6 +29,8 @@ namespace ESDentalLab
                     DetayGoster();
                 }
             };
+
+            btnIptal.Visible = VeriDeposu.YetkiVarMi(KullaniciYetki.OdemeIptal);
         }
 
         private void frmOdemeRaporu_Load(object sender, EventArgs e)
@@ -139,6 +141,12 @@ namespace ESDentalLab
 
         private void btnIptal_Click(object sender, EventArgs e)
         {
+            if (!VeriDeposu.YetkiVarMi(KullaniciYetki.OdemeIptal))
+            {
+                VeriDeposu.YetkiYokUyarisi("Ödeme iptali");
+                return;
+            }
+
             TahsilatOzeti? tahsilat = SeciliTahsilat();
             if (tahsilat is null)
             {

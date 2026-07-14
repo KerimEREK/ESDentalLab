@@ -157,6 +157,7 @@ namespace ESDentalLab
                 KullaniciAdi = "admin",
                 AdSoyad = "Sistem Yöneticisi",
                 Rol = KullaniciRol.Admin,
+                Yetkiler = KullaniciYetki.Hepsi,
                 Aktif = true,
                 SifreHash = SifreYardimcisi.HashOlustur("admin")
             });
@@ -164,6 +165,17 @@ namespace ESDentalLab
 
         public static bool AdminMi =>
             GirisYapanKullanici?.Rol == KullaniciRol.Admin && GirisYapanKullanici.Aktif;
+
+        public static bool YetkiVarMi(KullaniciYetki yetki) =>
+            GirisYapanKullanici?.YetkiVarMi(yetki) == true;
+
+        public static void YetkiYokUyarisi(string? islem = null)
+        {
+            string metin = string.IsNullOrWhiteSpace(islem)
+                ? "Bu işlem için yetkiniz yok."
+                : $"“{islem}” için yetkiniz yok.";
+            MessageBox.Show(metin, "Yetki yok", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
 
         public static (bool Basarili, string Mesaj) GirisYap(string kullaniciAdi, string sifre)
         {
@@ -223,7 +235,8 @@ namespace ESDentalLab
             string kullaniciAdi,
             string sifre,
             string adSoyad,
-            KullaniciRol rol)
+            KullaniciRol rol,
+            KullaniciYetki yetkiler)
         {
             kullaniciAdi = kullaniciAdi.Trim();
             adSoyad = adSoyad.Trim();
@@ -244,11 +257,17 @@ namespace ESDentalLab
                 return (false, "Bu kullanıcı adı zaten kayıtlı.");
             }
 
+            if (rol == KullaniciRol.Admin)
+            {
+                yetkiler = KullaniciYetki.Hepsi;
+            }
+
             Kullanicilar.Add(new Kullanici
             {
                 KullaniciAdi = kullaniciAdi,
                 AdSoyad = string.IsNullOrWhiteSpace(adSoyad) ? kullaniciAdi : adSoyad,
                 Rol = rol,
+                Yetkiler = yetkiler,
                 Aktif = true,
                 SifreHash = SifreYardimcisi.HashOlustur(sifre)
             });
@@ -256,6 +275,32 @@ namespace ESDentalLab
             DenetimEkle(DenetimKategori.Kullanici, "Kullanıcı eklendi",
                 $"{kullaniciAdi} · {(string.IsNullOrWhiteSpace(adSoyad) ? kullaniciAdi : adSoyad)} · {rol}");
             return (true, "Kullanıcı eklendi.");
+        }
+
+        public static (bool Basarili, string Mesaj) KullaniciYetkiGuncelle(
+            Kullanici kullanici,
+            KullaniciRol rol,
+            KullaniciYetki yetkiler,
+            string adSoyad)
+        {
+            if (kullanici.Rol == KullaniciRol.Admin &&
+                rol != KullaniciRol.Admin &&
+                Kullanicilar.Count(k => k.Rol == KullaniciRol.Admin && k.Aktif) <= 1)
+            {
+                return (false, "En az bir aktif admin kullanıcı kalmalıdır.");
+            }
+
+            if (rol == KullaniciRol.Admin)
+            {
+                yetkiler = KullaniciYetki.Hepsi;
+            }
+
+            kullanici.AdSoyad = string.IsNullOrWhiteSpace(adSoyad) ? kullanici.KullaniciAdi : adSoyad.Trim();
+            kullanici.Rol = rol;
+            kullanici.Yetkiler = yetkiler;
+            DenetimEkle(DenetimKategori.Kullanici, "Yetkiler güncellendi",
+                $"{kullanici.KullaniciAdi} · {rol} · {kullanici.YetkiOzeti}");
+            return (true, "Yetkiler güncellendi.");
         }
 
         public static (bool Basarili, string Mesaj) KullaniciPasifYap(Kullanici kullanici)

@@ -14,6 +14,10 @@ namespace ESDentalLab
                 dgvDoktorlar,
                 altKontroller: [btnDuzenle, btnKaldir, btnAktiflestir, chkPasifleriGoster],
                 altYukseklik: 48);
+
+            bool silme = VeriDeposu.YetkiVarMi(KullaniciYetki.Silme);
+            btnKaldir.Visible = silme;
+            btnAktiflestir.Visible = silme;
         }
 
         private void frmDoktorListesi_Load(object sender, EventArgs e)
@@ -46,6 +50,12 @@ namespace ESDentalLab
 
         private void btnKaldir_Click(object sender, EventArgs e)
         {
+            if (!VeriDeposu.YetkiVarMi(KullaniciYetki.Silme))
+            {
+                VeriDeposu.YetkiYokUyarisi("Doktor kaldırma");
+                return;
+            }
+
             if (dgvDoktorlar.CurrentRow?.DataBoundItem is not Doctor secilenDoktor)
             {
                 MessageBox.Show("Kaldırmak için listeden bir doktor seçin.", "Doktor seçilmedi");
@@ -75,6 +85,12 @@ namespace ESDentalLab
 
         private void btnAktiflestir_Click(object sender, EventArgs e)
         {
+            if (!VeriDeposu.YetkiVarMi(KullaniciYetki.Silme))
+            {
+                VeriDeposu.YetkiYokUyarisi("Doktor aktifleştirme");
+                return;
+            }
+
             if (dgvDoktorlar.CurrentRow?.DataBoundItem is not Doctor secilenDoktor)
             {
                 MessageBox.Show("Aktifleştirmek için listeden bir doktor seçin.", "Doktor seçilmedi");

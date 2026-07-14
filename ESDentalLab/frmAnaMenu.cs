@@ -7,6 +7,7 @@ namespace ESDentalLab
         private Button btnGeri = null!;
         private Button btnCikis = null!;
         private Button btnKullanicilar = null!;
+        private Button btnDenetim = null!;
         private Label lblOturum = null!;
         private Panel pnlKasaOzet = null!;
         private Label lblKasaBaslik = null!;
@@ -87,11 +88,11 @@ namespace ESDentalLab
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 11F, FontStyle.Bold),
                 Name = "btnKullanicilar",
-                Visible = VeriDeposu.AdminMi
+                Visible = VeriDeposu.YetkiVarMi(KullaniciYetki.KullaniciYonetimi)
             };
             btnKullanicilar.Click += btnKullanicilar_Click;
 
-            Button btnDenetim = new Button
+            btnDenetim = new Button
             {
                 Text = "Denetim",
                 Cursor = Cursors.Hand,
@@ -99,7 +100,7 @@ namespace ESDentalLab
                 Font = new Font("Segoe UI", 11F, FontStyle.Bold),
                 Name = "btnDenetim"
             };
-            btnDenetim.Click += (_, _) => SayfaAc(new frmDenetim());
+            btnDenetim.Click += btnDenetim_Click;
 
             pnlKasaOzet = new Panel
             {
@@ -259,11 +260,13 @@ namespace ESDentalLab
             tbl.Controls.Add(btnDenetim, 0, 5);
             tbl.SetColumnSpan(btnDenetim, 2);
 
-            if (VeriDeposu.AdminMi)
+            if (VeriDeposu.YetkiVarMi(KullaniciYetki.KullaniciYonetimi))
             {
                 tbl.Controls.Add(btnKullanicilar, 2, 5);
                 tbl.SetColumnSpan(btnKullanicilar, 2);
             }
+
+            YetkiyeGoreMenuAyarla();
 
             lblAltBilgi.Dock = DockStyle.Fill;
             lblAltBilgi.TextAlign = ContentAlignment.MiddleLeft;
@@ -351,8 +354,50 @@ namespace ESDentalLab
             }
         }
 
+        private void YetkiyeGoreMenuAyarla()
+        {
+            bool isYetki = VeriDeposu.YetkiVarMi(KullaniciYetki.IsIslemleri);
+            bool odemeAl = VeriDeposu.YetkiVarMi(KullaniciYetki.OdemeAl);
+            bool odemeIptal = VeriDeposu.YetkiVarMi(KullaniciYetki.OdemeIptal);
+            bool kasa = VeriDeposu.YetkiVarMi(KullaniciYetki.KasaGoruntule);
+            bool denetim = VeriDeposu.YetkiVarMi(KullaniciYetki.Denetim);
+
+            btnDoktorEkle.Visible = isYetki;
+            btnDoktorListesi.Visible = isYetki;
+            btnIsEkle.Visible = isYetki;
+            btnIsListesi.Visible = isYetki;
+            btnOdemeEkle.Visible = odemeAl;
+            btnOdemeRaporu.Visible = odemeAl || odemeIptal;
+            btnDenetim.Visible = denetim;
+
+            if (pnlKasaOzet is not null)
+            {
+                pnlKasaOzet.Visible = kasa;
+            }
+
+            if (!kasa)
+            {
+                _kasaTutariGorunur = false;
+                if (lblKasaDeger is not null)
+                {
+                    lblKasaDeger.Text = "Yetki yok";
+                }
+
+                if (btnKasaGoz is not null)
+                {
+                    btnKasaGoz.Visible = false;
+                }
+            }
+        }
+
         private void btnKasaGoz_Click(object? sender, EventArgs e)
         {
+            if (!VeriDeposu.YetkiVarMi(KullaniciYetki.KasaGoruntule))
+            {
+                VeriDeposu.YetkiYokUyarisi("Kasa görüntüleme");
+                return;
+            }
+
             _kasaTutariGorunur = !_kasaTutariGorunur;
             TutarGosterimleriniGuncelle();
         }
@@ -482,9 +527,9 @@ namespace ESDentalLab
 
         private void btnKullanicilar_Click(object? sender, EventArgs e)
         {
-            if (!VeriDeposu.AdminMi)
+            if (!VeriDeposu.YetkiVarMi(KullaniciYetki.KullaniciYonetimi))
             {
-                MessageBox.Show("Bu işlem yalnızca admin kullanıcılar içindir.", "Yetki yok");
+                VeriDeposu.YetkiYokUyarisi("Kullanıcı yönetimi");
                 return;
             }
 
@@ -493,31 +538,68 @@ namespace ESDentalLab
 
         private void btnDoktorEkle_Click(object sender, EventArgs e)
         {
+            if (!VeriDeposu.YetkiVarMi(KullaniciYetki.IsIslemleri))
+            {
+                VeriDeposu.YetkiYokUyarisi("Doktor / iş işlemleri");
+                return;
+            }
+
             SayfaAc(new frmDoktorEkle());
         }
 
         private void btnDoktorListesi_Click(object sender, EventArgs e)
         {
+            if (!VeriDeposu.YetkiVarMi(KullaniciYetki.IsIslemleri))
+            {
+                VeriDeposu.YetkiYokUyarisi("Doktor / iş işlemleri");
+                return;
+            }
+
             SayfaAc(new frmDoktorListesi());
         }
 
         private void btnIsEkle_Click(object sender, EventArgs e)
         {
+            if (!VeriDeposu.YetkiVarMi(KullaniciYetki.IsIslemleri))
+            {
+                VeriDeposu.YetkiYokUyarisi("Doktor / iş işlemleri");
+                return;
+            }
+
             SayfaAc(new frmIsEkle());
         }
 
         private void btnIsListesi_Click(object sender, EventArgs e)
         {
+            if (!VeriDeposu.YetkiVarMi(KullaniciYetki.IsIslemleri))
+            {
+                VeriDeposu.YetkiYokUyarisi("Doktor / iş işlemleri");
+                return;
+            }
+
             SayfaAc(new frmIsListesi());
         }
 
         private void btnOdemeEkle_Click(object sender, EventArgs e)
         {
+            if (!VeriDeposu.YetkiVarMi(KullaniciYetki.OdemeAl))
+            {
+                VeriDeposu.YetkiYokUyarisi("Ödeme alma");
+                return;
+            }
+
             SayfaAc(new frmOdemeEkle());
         }
 
         private void btnOdemeRaporu_Click(object sender, EventArgs e)
         {
+            if (!VeriDeposu.YetkiVarMi(KullaniciYetki.OdemeAl) &&
+                !VeriDeposu.YetkiVarMi(KullaniciYetki.OdemeIptal))
+            {
+                VeriDeposu.YetkiYokUyarisi("Ödeme raporu");
+                return;
+            }
+
             SayfaAc(new frmOdemeRaporu());
         }
 
@@ -526,23 +608,58 @@ namespace ESDentalLab
             SayfaAc(new frmBakiyeIsleri());
         }
 
+        private void btnDenetim_Click(object? sender, EventArgs e)
+        {
+            if (!VeriDeposu.YetkiVarMi(KullaniciYetki.Denetim))
+            {
+                VeriDeposu.YetkiYokUyarisi("Denetim kaydı");
+                return;
+            }
+
+            SayfaAc(new frmDenetim());
+        }
+
         private void pnlBugunTeslim_Click(object sender, EventArgs e)
         {
+            if (!VeriDeposu.YetkiVarMi(KullaniciYetki.IsIslemleri))
+            {
+                VeriDeposu.YetkiYokUyarisi("İş listesi");
+                return;
+            }
+
             SayfaAc(new frmIsListesi(IsListesiOzetFiltresi.BugunTeslim));
         }
 
         private void pnlGeciken_Click(object sender, EventArgs e)
         {
+            if (!VeriDeposu.YetkiVarMi(KullaniciYetki.IsIslemleri))
+            {
+                VeriDeposu.YetkiYokUyarisi("İş listesi");
+                return;
+            }
+
             SayfaAc(new frmIsListesi(IsListesiOzetFiltresi.Geciken));
         }
 
         private void pnlUretimde_Click(object sender, EventArgs e)
         {
+            if (!VeriDeposu.YetkiVarMi(KullaniciYetki.IsIslemleri))
+            {
+                VeriDeposu.YetkiYokUyarisi("İş listesi");
+                return;
+            }
+
             SayfaAc(new frmIsListesi(IsListesiOzetFiltresi.Uretimde));
         }
 
         private void pnlKasaOzet_Click(object? sender, EventArgs e)
         {
+            if (!VeriDeposu.YetkiVarMi(KullaniciYetki.KasaGoruntule))
+            {
+                VeriDeposu.YetkiYokUyarisi("Kasa görüntüleme");
+                return;
+            }
+
             SayfaAc(new frmKasa());
         }
     }

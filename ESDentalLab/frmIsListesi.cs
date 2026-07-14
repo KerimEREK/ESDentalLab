@@ -45,6 +45,9 @@ namespace ESDentalLab
                 ustYukseklik: 108,
                 altYukseklik: 48);
 
+            btnSil.Visible = VeriDeposu.YetkiVarMi(KullaniciYetki.Silme);
+            btnDuzenle.Visible = VeriDeposu.YetkiVarMi(KullaniciYetki.IsIslemleri);
+
             // Satır 1: arama/filtreler · Satır 2: tarih aralıkları
             if (cmbRptFiltresi.Parent is FlowLayoutPanel filtreAkis)
             {
@@ -95,6 +98,12 @@ namespace ESDentalLab
 
         private void btnDuzenle_Click(object sender, EventArgs e)
         {
+            if (!VeriDeposu.YetkiVarMi(KullaniciYetki.IsIslemleri))
+            {
+                VeriDeposu.YetkiYokUyarisi("İş düzenleme");
+                return;
+            }
+
             if (dgvIsler.CurrentRow?.DataBoundItem is not Is secilenIs)
             {
                 MessageBox.Show("Düzenlemek için listeden bir iş seçin.", "İş seçilmedi");
@@ -209,6 +218,12 @@ namespace ESDentalLab
 
         private void btnSil_Click(object sender, EventArgs e)
         {
+            if (!VeriDeposu.YetkiVarMi(KullaniciYetki.Silme))
+            {
+                VeriDeposu.YetkiYokUyarisi("İş silme");
+                return;
+            }
+
             if (dgvIsler.CurrentRow?.DataBoundItem is not Is secilenIs)
             {
                 MessageBox.Show("Silmek için listeden bir iş seçin.", "İş seçilmedi");
